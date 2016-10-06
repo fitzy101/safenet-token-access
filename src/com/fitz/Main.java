@@ -25,27 +25,28 @@ public class Main {
 
             CertStore cs = new CertStore();
 
-            // Load the PKCS11 config file which denoted the filepath
-            // of the USB token driver.
+            // Load the PKCS11 config file, ensure this has the correct
+            // path to the driver for the token.
             String pkcs11Config = configpath;
             SunPKCS11 providerPKCS11 = new SunPKCS11(pkcs11Config);
             java.security.Security.addProvider(providerPKCS11);
 
-            // Now the PKCS11 provider is available, create an instance of the
-            // keystore from the new provider.
+            // Using the PKCS11 provider, create an instance of the keystore.
+            // You'll need to load the keystore with the pin above.
             KeyStore keyStore = null;
             keyStore = KeyStore.getInstance("PKCS11");
-
-            // Now we have a pin, we want to finally load the keystore
-            // by initialising the token.
             keyStore.load(null, pin.toCharArray());
 
+            // This simply loops through the aliases and prints.
+            // From here you should have access to the token.
             Enumeration aliases = keyStore.aliases();
             while (aliases.hasMoreElements()){
                 String alias = aliases.nextElement().toString();
                 System.out.println(alias);
 
-                cs.provider = providerPKCS11;
+                // Example of some info you can extract.
+                // If you want to sign something with the certificate,
+                // get the private key and cert chain. Bingo!
                 cs.chain = keyStore.getCertificateChain(alias);
                 cs.pk = (PrivateKey) keyStore.getKey(alias, pin.toCharArray());
             }
